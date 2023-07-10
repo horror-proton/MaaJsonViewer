@@ -29,7 +29,12 @@ void Wire::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
   auto src_pt = scenePointSrc();
   auto dst_pt = scenePointDst();
 
-  painter->setPen(Qt::lightGray);
+  if (m_is_from_selected)
+    painter->setPen(Qt::green);
+  else if (m_is_to_selected)
+    painter->setPen(Qt::red);
+  else
+    painter->setPen(Qt::lightGray);
 
   static constexpr double radius = 15;
   static constexpr size_t subdiv = 18;
@@ -45,7 +50,8 @@ void Wire::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
   const int sgn = (dst_pt.y() >= src_pt.y()) ? 1 : -1;
 
   const bool loop =
-      dst_pt.x() < src_pt.x() && std::abs(dst_pt.y() - src_pt.y()) < 4 * radius; // FIXME: shit here
+      dst_pt.x() < src_pt.x() &&
+      std::abs(dst_pt.y() - src_pt.y()) < 4 * radius; // FIXME: shit here
 
   const auto c1 = QPointF(src_pt.x(), src_pt.y() + (loop ? -1 : sgn) * radius);
   const auto c2 = QPointF(dst_pt.x(), dst_pt.y() + (loop ? -1 : -sgn) * radius);

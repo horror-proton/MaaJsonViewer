@@ -24,7 +24,7 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
   if (isSelected()) {
     painter->setPen(Qt::NoPen);
     painter->setBrush(Qt::blue);
-    painter->drawRoundedRect(-8, -8, 100, 100, 10, 10);
+    painter->drawRoundedRect(-5, -5, 100, 100, 10, 10);
   }
   painter->setPen(Qt::lightGray);
   painter->setBrush(Qt::darkGray);
@@ -59,11 +59,19 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
   case QGraphicsItem::ItemSelectedChange:
     for (auto os : m_out_slots)
       for (auto ow : os->m_wires) {
+        ow->m_is_from_selected = value.toBool();
+        ow->update();
         if (auto next_node = ow->m_dst_slot->m_parent_node) {
           next_node->m_is_next_of_selected = value.toBool();
           next_node->update();
         }
       }
+    if (m_in_slot) {
+      for (auto iw : m_in_slot->m_wires) {
+        iw->m_is_to_selected = value.toBool();
+        iw->update();
+      }
+    }
   default:
     break;
   }

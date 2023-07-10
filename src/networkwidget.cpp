@@ -39,19 +39,27 @@ NetworkWidget::NetworkWidget(QWidget *parent) : QGraphicsView(parent) {
   */
 }
 
+uint32_t z_order_curve_helper(uint32_t x) {
+  x &= 0x55555555;
+  x = (x ^ (x >> 1)) & 0x33333333;
+  x = (x ^ (x >> 2)) & 0x0f0f0f0f;
+  x = (x ^ (x >> 4)) & 0x00ff00ff;
+  x = (x ^ (x >> 8)) & 0x0000ffff;
+  return x;
+}
+
 void NetworkWidget::import_json(const QJsonObject &root) {
-  double y = 0;
-  double x = 0;
+  int i = 0;
   for (auto k : root.keys()) {
+    auto ix = z_order_curve_helper(i >> 0);
+    auto iy = z_order_curve_helper(i >> 1);
+
     auto node = new Node(this);
-    node->setPos(x, y);
+    node->setPos(ix * 150, iy * 150 + 10 * ix);
     node->m_label = k;
     scene()->addItem(node);
     m_node_key_map.insert_or_assign(k.toStdString(), node);
-    if (x < 2000)
-      x += 150;
-    else
-      x = 0, y += 150;
+    ++i;
   }
 
   for (auto k : root.keys()) {

@@ -51,8 +51,9 @@ void NodeSlotOut::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
       network.createWire(src_slot, dst_slot);
       m_parent_node
           ->regenerate_reserved_out_slots(); // FIXME: causing delete this;?
-    } else
+    } else if (!network.m_pending_wire) {
       network.addSrcToPendingWire(this);
+    }
   } else if (!m_wires.isEmpty()) {
     m_parent_node->out_slot_disconnect(this); // FIXME: causing delete this;
   }

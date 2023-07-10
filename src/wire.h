@@ -32,4 +32,7 @@ private:
   friend NodeSlotIn;
   friend NodeSlotOut;
   friend Node;
+
+  bool m_is_from_selected = false;
+  bool m_is_to_selected = false;
 };
