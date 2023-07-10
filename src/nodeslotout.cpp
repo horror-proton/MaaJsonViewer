@@ -39,6 +39,9 @@ QRectF NodeSlotOut::boundingRect() const { return QRectF{-4, -4, 8, 8}; }
 void NodeSlotOut::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
   QGraphicsItem::mouseReleaseEvent(event);
 
+  if (m_parent_node) // TODO: update m_is_next_of_selected after wire changes
+    m_parent_node->setSelected(false);
+
   auto &network = *m_parent_node->parent_network();
   if (isReservedNode()) {
     auto pending_wire = network.m_pending_wire;

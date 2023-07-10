@@ -21,24 +21,31 @@ Node::Node(NetworkWidget *parent) : m_parent_network(parent) {
 
 void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                  QWidget *widget) {
-  painter->setPen(Qt::NoPen);
   if (isSelected()) {
+    painter->setPen(Qt::NoPen);
     painter->setBrush(Qt::blue);
     painter->drawRoundedRect(-8, -8, 100, 100, 10, 10);
   }
+  painter->setPen(Qt::lightGray);
   painter->setBrush(Qt::darkGray);
   painter->drawRoundedRect(-10, -10, 100, 100, 10, 10);
 
   QFont font = painter->font();
   font.setStyleHint(QFont::TypeWriter);
-  font.setPixelSize(6);
+  font.setPixelSize(8);
   painter->setFont(font);
 
   painter->setPen(Qt::white);
   painter->drawText(QRect{0, -20, 80, 10}, m_label);
+
+  if (m_is_next_of_selected) {
+    painter->setPen(Qt::NoPen);
+    painter->setBrush(Qt::green);
+    painter->drawRect(-10, -20, 10, 10);
+  }
 }
 
-QRectF Node::boundingRect() const { return QRectF{-15, -20, 110, 120}; }
+QRectF Node::boundingRect() const { return QRectF{-15, -20, 130, 130}; }
 
 QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
   switch (change) {
@@ -49,6 +56,14 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
       for (auto w : s->m_wires)
         w->adjust();
     break;
+  case QGraphicsItem::ItemSelectedChange:
+    for (auto os : m_out_slots)
+      for (auto ow : os->m_wires) {
+        if (auto next_node = ow->m_dst_slot->m_parent_node) {
+          next_node->m_is_next_of_selected = value.toBool();
+          next_node->update();
+        }
+      }
   default:
     break;
   }

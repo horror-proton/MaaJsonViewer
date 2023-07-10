@@ -47,6 +47,8 @@ private:
   friend NodeSlotOut;
   friend NodeSlotIn;
 
+  bool m_is_next_of_selected = false;
+
 public:
   QString m_label = "?"; // TODO: render more info
 };
