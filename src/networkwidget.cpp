@@ -9,6 +9,7 @@
 
 #include "QDebug"
 #include "QMouseEvent"
+#include "textnode.h"
 #include "wire.h"
 
 NetworkWidget::NetworkWidget(QWidget *parent) : QGraphicsView(parent) {
@@ -51,6 +52,8 @@ uint32_t z_order_curve_helper(uint32_t x) {
 void NetworkWidget::import_json(const QJsonObject &root) {
   int i = 0;
   for (auto k : root.keys()) {
+    if (k == "Stop") // Do not add Stop node
+      continue;
     auto ix = z_order_curve_helper(i >> 0);
     auto iy = z_order_curve_helper(i >> 1);
 
@@ -62,14 +65,21 @@ void NetworkWidget::import_json(const QJsonObject &root) {
     ++i;
   }
 
-  for (auto k : root.keys()) {
-    Node *node = m_node_key_map[k.toStdString()];
-    auto nextarr = root[k]["next"].toArray();
+  for (auto [k, node] : m_node_key_map) {
+    auto nextarr = root[QString::fromStdString(k)]["next"].toArray();
     for (auto other_key : nextarr) {
       auto iter = m_node_key_map.find(other_key.toString().toStdString());
       if (iter == m_node_key_map.end()) {
-        qDebug() << "node " << other_key << " not found";
+        qDebug() << "node " << other_key.toString() << " not found";
         // TODO: connect to a textbox representing unresolved nodes
+        auto dst_node = new TextNode(this, other_key.toString());
+        auto src_slot = node->add_out_slot();
+        auto dst_slot = dst_node->in_slot();
+
+        // FIXME: what to do when parent was deleted
+        dst_node->setParentItem(node);
+        dst_node->setPos(src_slot->pos().x() + 20, src_slot->pos().y());
+        createWire(src_slot, dst_slot);
         continue;
       }
       auto dst_node = iter->second;

@@ -4,9 +4,16 @@
 #include "nodeslotout.h"
 #include "qfont.h"
 #include "qnamespace.h"
+#include "textnode.h"
 #include "wire.h"
 
+#include <cstddef>
 #include <qdebug.h>
+
+template <class... Ts> struct overloaded : Ts... {
+  using Ts::operator()...;
+};
+template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
 Node::Node(NetworkWidget *parent) : m_parent_network(parent) {
   setFlag(ItemIsMovable);
@@ -45,7 +52,7 @@ void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
   }
 }
 
-QRectF Node::boundingRect() const { return QRectF{-15, -20, 130, 130}; }
+QRectF Node::boundingRect() const { return QRectF{-15, -20, 120, 130}; }
 
 QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
   switch (change) {
@@ -61,10 +68,15 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
       for (auto ow : os->m_wires) {
         ow->m_is_from_selected = value.toBool();
         ow->update();
-        if (auto next_node = ow->m_dst_slot->m_parent_node) {
-          next_node->m_is_next_of_selected = value.toBool();
-          next_node->update();
-        }
+        std::visit(overloaded{
+                       [](std::nullptr_t) {},
+                       [selected = value.toBool()](auto &&next_node) {
+                         next_node->m_is_next_of_selected = selected;
+                         next_node->update();
+                       },
+
+                   },
+                   ow->m_dst_slot->m_parent_node);
       }
     if (m_in_slot) {
       for (auto iw : m_in_slot->m_wires) {
