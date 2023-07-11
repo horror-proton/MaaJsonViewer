@@ -49,15 +49,26 @@ uint32_t z_order_curve_helper(uint32_t x) {
   return x;
 }
 
-void NetworkWidget::import_json(const QJsonObject &root) {
+void NetworkWidget::import_json(const QJsonObject &root, const QDir &img_dir) {
   int i = 0;
   for (auto k : root.keys()) {
     if (k == "Stop") // Do not add Stop node
       continue;
+
+    QPixmap pixmap = {};
+    auto iter = QDirIterator(img_dir);
+    while (iter.hasNext()) {
+      auto fn = iter.next();
+      if (iter.fileName() == k + ".png") {
+        pixmap = QPixmap(iter.filePath());
+        break;
+      }
+    }
+
     auto ix = z_order_curve_helper(i >> 0);
     auto iy = z_order_curve_helper(i >> 1);
 
-    auto node = new Node(this);
+    auto node = new Node(this, pixmap);
     node->setPos(ix * 150, iy * 150 + 10 * ix);
     node->m_label = k;
     scene()->addItem(node);

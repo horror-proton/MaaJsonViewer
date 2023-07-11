@@ -23,7 +23,8 @@ int main(int argc, char **argv) {
     auto buf = f.readAll();
     root = QJsonDocument::fromJson(buf).object();
   }
-  network->import_json(root);
+  network->import_json(
+      root, QDir("/usr/share/maa-assistant-arknights/resource/template"));
 
   main_window.show();
   return app.exec();

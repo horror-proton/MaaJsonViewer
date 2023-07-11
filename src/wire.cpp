@@ -36,7 +36,7 @@ void Wire::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
   else
     painter->setPen(Qt::lightGray);
 
-  static constexpr double radius = 15;
+  static constexpr double radius = 10;
   static constexpr size_t subdiv = 18;
 
   const auto ptdist =

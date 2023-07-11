@@ -2,6 +2,7 @@
 
 #include "qgraphicsview.h"
 #include "qobjectdefs.h"
+#include <QDirIterator>
 #include <QGraphicsView>
 #include <unordered_map>
 
@@ -16,7 +17,7 @@ class NetworkWidget : public QGraphicsView {
 public:
   NetworkWidget(QWidget *parent = nullptr);
 
-  void import_json(const QJsonObject &root);
+  void import_json(const QJsonObject &root, const QDir &img_dir);
 
   std::unordered_map<std::string, Node *> m_node_key_map;
 

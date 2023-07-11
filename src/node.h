@@ -6,12 +6,13 @@
 #include "nodeslotin.h"
 #include "nodeslotout.h"
 #include "qlist.h"
+#include "qpixmap.h"
 
 #include <string>
 
 class Node : public QGraphicsItem {
 public:
-  Node(NetworkWidget *parent);
+  Node(NetworkWidget *parent, QPixmap pixmap = {});
 
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
              QWidget *widget = nullptr) override;
@@ -44,11 +45,14 @@ private:
   QList<NodeSlotOut *> m_out_slots = {};
   QList<NodeSlotOut *> m_reserved_out_slots = {};
 
+  QPixmap m_pixmap = {};
+
   friend NodeSlotOut;
   friend NodeSlotIn;
 
   bool m_is_next_of_selected = false;
 
 public:
-  QString m_label = "?"; // TODO: render more info
+  // TODO: move these to a struct
+  QString m_label = "?";
 };

@@ -3,6 +3,7 @@
 #include "nodeslotin.h"
 #include "nodeslotout.h"
 #include "qfont.h"
+#include "qgraphicsitem.h"
 #include "qnamespace.h"
 #include "textnode.h"
 #include "wire.h"
@@ -15,13 +16,19 @@ template <class... Ts> struct overloaded : Ts... {
 };
 template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
-Node::Node(NetworkWidget *parent) : m_parent_network(parent) {
+Node::Node(NetworkWidget *parent, QPixmap pixmap)
+    : m_parent_network(parent), m_pixmap(std::move(pixmap)) {
   setFlag(ItemIsMovable);
   setFlag(ItemSendsGeometryChanges);
   setFlag(ItemIsSelectable);
   auto p_in_slot = new NodeSlotIn(this);
   p_in_slot->setPos(-10, 0);
   m_in_slot = p_in_slot;
+
+  if (!m_pixmap.isNull()) {
+    m_pixmap = m_pixmap.scaledToWidth(80);
+    auto pixmap_item = new QGraphicsPixmapItem(m_pixmap, this);
+  }
 
   regenerate_reserved_out_slots();
 }
@@ -74,7 +81,6 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
                          next_node->m_is_next_of_selected = selected;
                          next_node->update();
                        },
-
                    },
                    ow->m_dst_slot->m_parent_node);
       }
