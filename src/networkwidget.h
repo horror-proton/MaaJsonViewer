@@ -4,6 +4,7 @@
 #include "qobjectdefs.h"
 #include <QDirIterator>
 #include <QGraphicsView>
+#include <optional>
 #include <unordered_map>
 
 class Wire;
@@ -30,7 +31,12 @@ protected:
 
   void mouseReleaseEvent(QMouseEvent *event) override;
 
+  void wheelEvent(QWheelEvent *event) override;
+
 public:
+  void scaleView(double factor);
+  // void moveView(const QPoint &delta);
+
   void addSrcToPendingWire(NodeSlotOut *src);
   void addPendingToDstWire(NodeSlotIn *dst);
   void clearPendingWire();
@@ -41,7 +47,15 @@ public:
   // those modified slots manually
   void deleteWire(Wire *wire);
 
+private:
   Wire *m_pending_wire = nullptr; // TODO: use unique_prt
   NodeSlotIn *m_virt_dst = nullptr;
   NodeSlotOut *m_virt_src = nullptr;
+
+  bool m_keep_pending_wire_once = false; // any idea how to remove this?
+
+  friend NodeSlotOut;
+  friend NodeSlotIn;
+
+  std::optional<QPoint> m_mmb_down = std::nullopt;
 };

@@ -11,6 +11,7 @@
 #include "QMouseEvent"
 #include "textnode.h"
 #include "wire.h"
+#include <cmath>
 
 NetworkWidget::NetworkWidget(QWidget *parent) : QGraphicsView(parent) {
   {
@@ -25,19 +26,6 @@ NetworkWidget::NetworkWidget(QWidget *parent) : QGraphicsView(parent) {
   setRenderHints(QPainter::Antialiasing);
 
   scale(1.5, 1.5);
-  /*
-    auto n1 = new Node(this);
-    n1->setPos(100, 100);
-    scene()->addItem(n1);
-
-    auto n2 = new Node(this);
-    n2->setPos(200, 200);
-    scene()->addItem(n2);
-
-    auto n3 = new Node(this);
-    n3->setPos(-100, -100);
-    scene()->addItem(n3);
-  */
 }
 
 uint32_t z_order_curve_helper(uint32_t x) {
@@ -120,18 +108,42 @@ void NetworkWidget::mouseMoveEvent(QMouseEvent *event) {
       m_pending_wire->adjust();
     }
   }
+  if (m_mmb_down) {
+    auto delta = event->pos() - m_mmb_down.value();
+    translate(delta.x(), delta.y());
+  }
   QGraphicsView::mouseMoveEvent(event);
 }
 
 void NetworkWidget::mousePressEvent(QMouseEvent *event) {
   QGraphicsView::mousePressEvent(event);
+  if (event->button() == Qt::MiddleButton) {
+    m_mmb_down = event->pos();
+    setCursor(Qt::CrossCursor);
+  }
 }
 
 void NetworkWidget::mouseReleaseEvent(QMouseEvent *event) {
-  if (event->button() == Qt::RightButton) {
+  QGraphicsView::mouseReleaseEvent(event); // set m_keep_pending_wire_once
+  if (event->button() == Qt::LeftButton && !m_keep_pending_wire_once)
     clearPendingWire();
+  else if (event->button() == Qt::MiddleButton) {
+    m_mmb_down = std::nullopt;
+    setCursor(Qt::ArrowCursor);
   }
-  QGraphicsView::mouseReleaseEvent(event);
+  m_keep_pending_wire_once = false;
+}
+
+void NetworkWidget::wheelEvent(QWheelEvent *event) {
+  scaleView(std::pow(2., event->angleDelta().y() / 240.));
+}
+
+void NetworkWidget::scaleView(double factor) {
+  auto f =
+      transform().scale(factor, factor).mapRect(QRectF{0, 0, 1, 1}).width();
+  if (f < 0.07 || f > 100)
+    return;
+  scale(factor, factor);
 }
 
 void NetworkWidget::addSrcToPendingWire(NodeSlotOut *src) {

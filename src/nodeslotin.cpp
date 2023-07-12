@@ -9,7 +9,6 @@
 
 #include "QDebug"
 
-
 void NodeSlotIn::paint(QPainter *painter,
                        const QStyleOptionGraphicsItem *option,
                        QWidget *widget) {

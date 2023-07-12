@@ -43,19 +43,23 @@ void NodeSlotOut::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     m_parent_node->setSelected(false);
 
   auto &network = *m_parent_node->parent_network();
+  auto pending_wire = network.m_pending_wire;
   if (isReservedNode()) {
-    auto pending_wire = network.m_pending_wire;
     if (pending_wire && pending_wire->m_src_slot->isOrphan()) {
+      // a pending to dst wire, connect it here
       auto dst_slot = pending_wire->m_dst_slot;
       auto src_slot = m_parent_node->add_out_slot(nodeIndex());
       network.createWire(src_slot, dst_slot);
       m_parent_node
           ->regenerate_reserved_out_slots(); // FIXME: causing delete this;?
-    } else if (!network.m_pending_wire) {
+    } else if (!pending_wire) {
+      // create a src to pending wire
       network.addSrcToPendingWire(this);
+      m_parent_node->parent_network()->m_keep_pending_wire_once = true;
     }
   } else if (!m_wires.isEmpty()) {
     m_parent_node->out_slot_disconnect(this); // FIXME: causing delete this;
+    m_parent_node->parent_network()->m_keep_pending_wire_once = true;
   }
 }
 
