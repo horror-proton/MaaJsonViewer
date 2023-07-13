@@ -14,17 +14,18 @@ int main(int argc, char **argv) {
   auto network = new NetworkWidget;
   main_window.setCentralWidget(network);
 
-  QJsonObject root;
 
-  QFile f;
+  QJsonObject root;
   {
-    f.setFileName("/usr/share/maa-assistant-arknights/resource/tasks.json");
+    QFile f;
+    f.setFileName("./MAA1999/assets/resource/pipeline/startup.json");
     f.open(QIODevice::ReadOnly | QIODevice::Text);
     auto buf = f.readAll();
     root = QJsonDocument::fromJson(buf).object();
   }
-  network->import_json(
-      root, QDir("/usr/share/maa-assistant-arknights/resource/template"));
+
+  network->import_json(root, QDir("./MAA1999/assets/resource/"
+                                  "pipeline/template/StartUp"));
 
   main_window.show();
   return app.exec();
