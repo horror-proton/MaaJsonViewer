@@ -58,8 +58,8 @@ void NodeSlotOut::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
       m_parent_node->parent_network()->m_keep_pending_wire_once = true;
     }
   } else if (!m_wires.isEmpty()) {
-    m_parent_node->out_slot_disconnect(this); // FIXME: causing delete this;
     m_parent_node->parent_network()->m_keep_pending_wire_once = true;
+    m_parent_node->out_slot_disconnect(this); // FIXME: causing delete this;
   }
 }
 
