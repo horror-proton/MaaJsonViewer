@@ -33,6 +33,9 @@ protected:
 
   void wheelEvent(QWheelEvent *event) override;
 
+signals:
+  void node_selection_changed(Node *);
+
 public:
   void scaleView(double factor);
   // void moveView(const QPoint &delta);

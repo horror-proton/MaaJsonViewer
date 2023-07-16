@@ -5,6 +5,7 @@
 #include "networkwidget.h"
 #include "nodeslotin.h"
 #include "nodeslotout.h"
+#include "qjsonobject.h"
 #include "qlist.h"
 #include "qpixmap.h"
 
@@ -55,4 +56,7 @@ private:
 public:
   // TODO: move these to a struct
   QString m_label = "?";
+
+  // NodeInfo::NodeInfo m_node_info = {};
+  QJsonObject m_node_info = {};
 };

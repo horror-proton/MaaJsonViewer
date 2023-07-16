@@ -15,9 +15,19 @@
 
 NetworkWidget::NetworkWidget(QWidget *parent) : QGraphicsView(parent) {
   {
-    auto scene = new QGraphicsScene(this);
-    scene->setItemIndexMethod(QGraphicsScene::NoIndex);
-    setScene(scene);
+    auto s = new QGraphicsScene(this);
+    s->setItemIndexMethod(QGraphicsScene::NoIndex);
+    setScene(s);
+
+    connect(s, &QGraphicsScene::selectionChanged, this, [this]() -> void {
+      auto list = scene()->selectedItems();
+      if (list.size() != 1)
+        emit node_selection_changed(nullptr);
+      else if (auto node = dynamic_cast<Node *>(list[0]))
+        emit node_selection_changed(node);
+      else
+        emit node_selection_changed(nullptr);
+    });
   }
 
   setTransformationAnchor(AnchorUnderMouse);
@@ -59,6 +69,7 @@ void NetworkWidget::import_json(const QJsonObject &root, const QDir &img_dir) {
     auto node = new Node(this, pixmap);
     node->setPos(ix * 150, iy * 150 + 10 * ix);
     node->m_label = k;
+    node->m_node_info = root.value(k).toObject();
     scene()->addItem(node);
     m_node_key_map.insert_or_assign(k.toStdString(), node);
     ++i;

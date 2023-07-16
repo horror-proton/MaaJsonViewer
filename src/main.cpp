@@ -1,8 +1,10 @@
 #include "networkwidget.h"
+#include "parametereditor.h"
 #include "qdebug.h"
 #include "qmainwindow.h"
 #include <QApplication>
 #include <QFile>
+#include <QHBoxLayout>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QMainWindow>
@@ -12,8 +14,15 @@ int main(int argc, char **argv) {
   QMainWindow main_window;
 
   auto network = new NetworkWidget;
-  main_window.setCentralWidget(network);
+  auto param_editor = new ParameterEditor;
 
+  auto central = new QWidget;
+  auto lo = new QHBoxLayout(central);
+  lo->addWidget(network);
+  lo->addWidget(param_editor);
+  QObject::connect(network, &NetworkWidget::node_selection_changed,
+                   param_editor, &ParameterEditor::update_selection);
+  main_window.setCentralWidget(central);
 
   QJsonObject root;
   {
