@@ -16,7 +16,7 @@ class NetworkWidget : public QGraphicsView {
   Q_OBJECT
 
 public:
-  NetworkWidget(QWidget *parent = nullptr);
+  explicit NetworkWidget(QWidget *parent = nullptr);
 
   void import_json(const QJsonObject &root, const QDir &img_dir);
 

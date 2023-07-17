@@ -8,10 +8,10 @@ class Node;
 
 class NodeSlotOut : public QGraphicsItem {
 public:
-  NodeSlotOut(Node *parent, bool reserved = false);
+  explicit NodeSlotOut(Node *parent, bool reserved = false);
 
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-             QWidget *widget = nullptr) override;
+             QWidget *widget) override;
 
   QRectF boundingRect() const override;
 
@@ -20,7 +20,7 @@ public:
   void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
 
 public:
-  constexpr bool isOrphan() const { return !m_parent_node; }
+  constexpr bool isOrphan() const { return m_parent_node == nullptr; }
 
   constexpr bool isReservedNode() const { return m_reserved; }
 

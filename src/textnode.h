@@ -7,7 +7,7 @@ class TextNode : public QGraphicsItem {
 public:
   TextNode(NetworkWidget *parent, QString text);
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-             QWidget *widget = nullptr) override;
+             QWidget *widget) override;
 
   QRectF boundingRect() const override;
 
@@ -22,7 +22,7 @@ private:
   NetworkWidget *m_parent_network;
   NodeSlotIn *m_in_slot;
   QString m_text;
-  bool m_is_next_of_selected;
+  bool m_is_next_of_selected = false;
 
   friend Node;
 };

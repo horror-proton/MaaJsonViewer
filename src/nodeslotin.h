@@ -13,7 +13,7 @@ class Wire;
 
 class NodeSlotIn : public QGraphicsItem {
 public:
-  NodeSlotIn(auto parent) : m_parent_node(parent) {
+  explicit NodeSlotIn(auto parent) : m_parent_node(parent) {
     if (parent) {
       setParentItem(static_cast<QGraphicsItem *>(parent));
       setAcceptedMouseButtons(Qt::LeftButton);
@@ -25,7 +25,7 @@ public:
   }
 
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-             QWidget *widget = nullptr) override;
+             QWidget *widget) override;
 
   QRectF boundingRect() const override;
 
@@ -35,11 +35,10 @@ public:
 
 public:
   Node *parentNode() const {
-    auto pp = std::get_if<Node *>(&m_parent_node);
-    if (!pp)
+    const auto *pp = std::get_if<Node *>(&m_parent_node);
+    if (pp == nullptr)
       return nullptr;
-    else
-      return *pp;
+    return *pp;
   }
   bool isOrphan() const {
     return std::holds_alternative<std::nullptr_t>(m_parent_node);

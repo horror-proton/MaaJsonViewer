@@ -11,7 +11,7 @@
 class ParameterEditor : public QWidget {
   Q_OBJECT
 public:
-  ParameterEditor(QWidget *parent = nullptr);
+  explicit ParameterEditor(QWidget *parent = nullptr);
 
   void load_from_json(const QJsonObject &json);
 

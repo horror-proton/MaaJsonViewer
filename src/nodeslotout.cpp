@@ -9,7 +9,7 @@
 
 NodeSlotOut::NodeSlotOut(Node *parent, bool reserved)
     : m_parent_node(parent), m_reserved(reserved) {
-  if (parent) {
+  if (parent != nullptr) {
     setParentItem(static_cast<QGraphicsItem *>(parent));
     setAcceptedMouseButtons(Qt::LeftButton);
   } else {
@@ -20,8 +20,8 @@ NodeSlotOut::NodeSlotOut(Node *parent, bool reserved)
 }
 
 void NodeSlotOut::paint(QPainter *painter,
-                        const QStyleOptionGraphicsItem *option,
-                        QWidget *widget) {
+                        const QStyleOptionGraphicsItem * /*option*/,
+                        QWidget * /*widget*/) {
   if (isOrphan())
     return;
   if (!isReservedNode()) {
@@ -39,20 +39,21 @@ QRectF NodeSlotOut::boundingRect() const { return QRectF{-4, -4, 8, 8}; }
 void NodeSlotOut::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
   QGraphicsItem::mouseReleaseEvent(event);
 
-  if (m_parent_node) // TODO: update m_is_next_of_selected after wire changes
+  if (m_parent_node !=
+      nullptr) // TODO: update m_is_next_of_selected after wire changes
     m_parent_node->setSelected(false);
 
   auto &network = *m_parent_node->parent_network();
-  auto pending_wire = network.m_pending_wire;
+  auto *pending_wire = network.m_pending_wire;
   if (isReservedNode()) {
-    if (pending_wire && pending_wire->m_src_slot->isOrphan()) {
+    if ((pending_wire != nullptr) && pending_wire->m_src_slot->isOrphan()) {
       // a pending to dst wire, connect it here
-      auto dst_slot = pending_wire->m_dst_slot;
-      auto src_slot = m_parent_node->add_out_slot(nodeIndex());
+      auto *dst_slot = pending_wire->m_dst_slot;
+      auto *src_slot = m_parent_node->add_out_slot(nodeIndex());
       network.createWire(src_slot, dst_slot);
       m_parent_node
           ->regenerate_reserved_out_slots(); // FIXME: causing delete this;?
-    } else if (!pending_wire) {
+    } else if (pending_wire == nullptr) {
       // create a src to pending wire
       network.addSrcToPendingWire(this);
       m_parent_node->parent_network()->m_keep_pending_wire_once = true;

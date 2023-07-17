@@ -11,7 +11,7 @@ public:
   Wire(NetworkWidget *parent, NodeSlotOut *src, NodeSlotIn *dst);
 
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-             QWidget *widget = nullptr) override;
+             QWidget *widget) override;
 
   QRectF boundingRect() const override;
 

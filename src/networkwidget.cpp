@@ -15,17 +15,16 @@
 
 NetworkWidget::NetworkWidget(QWidget *parent) : QGraphicsView(parent) {
   {
-    auto s = new QGraphicsScene(this);
+    auto *s = new QGraphicsScene(this);
     s->setItemIndexMethod(QGraphicsScene::NoIndex);
     setScene(s);
 
     connect(s, &QGraphicsScene::selectionChanged, this, [this]() -> void {
       auto list = scene()->selectedItems();
-      if (list.size() != 1)
-        emit node_selection_changed(nullptr);
-      else if (auto node = dynamic_cast<Node *>(list[0]))
-        emit node_selection_changed(node);
-      else
+      if (list.size() == 1) {
+        if (auto *node = dynamic_cast<Node *>(list[0]))
+          emit node_selection_changed(node);
+      } else
         emit node_selection_changed(nullptr);
     });
   }
@@ -49,7 +48,7 @@ uint32_t z_order_curve_helper(uint32_t x) {
 
 void NetworkWidget::import_json(const QJsonObject &root, const QDir &img_dir) {
   int i = 0;
-  for (auto k : root.keys()) {
+  for (const auto &k : root.keys()) {
     if (k == "Stop") // Do not add Stop node
       continue;
 
@@ -66,7 +65,7 @@ void NetworkWidget::import_json(const QJsonObject &root, const QDir &img_dir) {
     auto ix = z_order_curve_helper(i >> 0);
     auto iy = z_order_curve_helper(i >> 1);
 
-    auto node = new Node(this, pixmap);
+    auto *node = new Node(this, pixmap);
     node->setPos(ix * 150, iy * 150 + 10 * ix);
     node->m_label = k;
     node->m_node_info = root.value(k).toObject();
@@ -82,9 +81,9 @@ void NetworkWidget::import_json(const QJsonObject &root, const QDir &img_dir) {
       if (iter == m_node_key_map.end()) {
         qDebug() << "node " << other_key.toString() << " not found";
         // TODO: connect to a textbox representing unresolved nodes
-        auto dst_node = new TextNode(this, other_key.toString());
-        auto src_slot = node->add_out_slot();
-        auto dst_slot = dst_node->in_slot();
+        auto *dst_node = new TextNode(this, other_key.toString());
+        auto *src_slot = node->add_out_slot();
+        auto *dst_slot = dst_node->in_slot();
 
         // FIXME: what to do when parent was deleted
         dst_node->setParentItem(node);
@@ -92,9 +91,9 @@ void NetworkWidget::import_json(const QJsonObject &root, const QDir &img_dir) {
         createWire(src_slot, dst_slot);
         continue;
       }
-      auto dst_node = iter->second;
-      auto src_slot = node->add_out_slot();
-      auto dst_slot = dst_node->in_slot();
+      auto *dst_node = iter->second;
+      auto *src_slot = node->add_out_slot();
+      auto *dst_slot = dst_node->in_slot();
       createWire(src_slot, dst_slot);
     }
     node->regenerate_reserved_out_slots();
@@ -108,13 +107,13 @@ void NetworkWidget::drawBackground(QPainter *painter, const QRectF &rect) {
 }
 
 void NetworkWidget::mouseMoveEvent(QMouseEvent *event) {
-  if (m_pending_wire) {
+  if (m_pending_wire != nullptr) {
     auto scene_pos = mapToScene(event->pos());
-    if (m_virt_dst) {
+    if (m_virt_dst != nullptr) {
       m_virt_dst->setPos(scene_pos);
       m_pending_wire->adjust();
     }
-    if (m_virt_src) {
+    if (m_virt_src != nullptr) {
       m_virt_src->setPos(scene_pos);
       m_pending_wire->adjust();
     }
@@ -178,17 +177,17 @@ void NetworkWidget::addPendingToDstWire(NodeSlotIn *dst) {
 }
 
 void NetworkWidget::clearPendingWire() {
-  if (m_pending_wire) {
+  if (m_pending_wire != nullptr) {
     scene()->removeItem(m_pending_wire);
     delete m_pending_wire;
     m_pending_wire = nullptr;
   }
-  if (m_virt_src) {
+  if (m_virt_src != nullptr) {
     scene()->removeItem(m_virt_src);
     delete m_virt_src;
     m_virt_src = nullptr;
   }
-  if (m_virt_dst) {
+  if (m_virt_dst != nullptr) {
     scene()->removeItem(m_virt_dst);
     delete m_virt_dst;
     m_virt_dst = nullptr;
@@ -196,7 +195,7 @@ void NetworkWidget::clearPendingWire() {
 }
 
 void NetworkWidget::createWire(NodeSlotOut *src, NodeSlotIn *dst) {
-  auto wire = new Wire(this, src, dst);
+  auto *wire = new Wire(this, src, dst);
   dst->m_wires.append(wire);
   src->m_wires.append(wire);
   scene()->addItem(wire);

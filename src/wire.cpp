@@ -11,19 +11,19 @@ Wire::Wire(NetworkWidget *parent, NodeSlotOut *src, NodeSlotIn *dst)
 }
 
 QPointF Wire::scenePointSrc() const {
-  if (!m_src_slot)
+  if (m_src_slot == nullptr)
     return {};
   return m_src_slot->mapToScene(0, 0);
 }
 QPointF Wire::scenePointDst() const {
-  if (!m_dst_slot)
+  if (m_dst_slot == nullptr)
     return {};
   return m_dst_slot->mapToScene(0, 0);
 }
 
-void Wire::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-                 QWidget *widget) {
-  if (!m_src_slot || !m_dst_slot)
+void Wire::paint(QPainter *painter, const QStyleOptionGraphicsItem * /*option*/,
+                 QWidget * /*widget*/) {
+  if ((m_src_slot == nullptr) || (m_dst_slot == nullptr))
     return;
 
   auto src_pt = scenePointSrc();
@@ -95,7 +95,7 @@ void Wire::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 }
 
 QRectF Wire::boundingRect() const {
-  if (!m_src_slot || !m_dst_slot)
+  if ((m_src_slot == nullptr) || (m_dst_slot == nullptr))
     return QRectF{};
 
   auto src_pt = scenePointSrc();

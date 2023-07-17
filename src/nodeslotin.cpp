@@ -10,8 +10,8 @@
 #include "QDebug"
 
 void NodeSlotIn::paint(QPainter *painter,
-                       const QStyleOptionGraphicsItem *option,
-                       QWidget *widget) {
+                       const QStyleOptionGraphicsItem * /*option*/,
+                       QWidget * /*widget*/) {
   if (isOrphan()) {
     painter->setPen(Qt::NoPen);
     painter->setBrush(Qt::red);
@@ -27,12 +27,12 @@ void NodeSlotIn::paint(QPainter *painter,
 QRectF NodeSlotIn::boundingRect() const { return QRectF{0, -5, 5, 10}; }
 
 void NodeSlotIn::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
-  auto pending_wire = parent_network()->m_pending_wire;
-  if (pending_wire && pending_wire->m_dst_slot->isOrphan()) {
-    auto src_slot = pending_wire->m_src_slot;
-    auto src_node = src_slot->parentNode();
+  auto *pending_wire = parent_network()->m_pending_wire;
+  if ((pending_wire != nullptr) && pending_wire->m_dst_slot->isOrphan()) {
+    auto *src_slot = pending_wire->m_src_slot;
+    auto *src_node = src_slot->parentNode();
     auto src_slot_index = src_slot->nodeIndex();
-    auto node = src_node->add_out_slot(src_slot_index);
+    auto *node = src_node->add_out_slot(src_slot_index);
     src_node->regenerate_reserved_out_slots();
 
     parent_network()->createWire(node, this);

@@ -13,11 +13,11 @@ int main(int argc, char **argv) {
   QApplication app(argc, argv);
   QMainWindow main_window;
 
-  auto network = new NetworkWidget;
-  auto param_editor = new ParameterEditor;
+  auto *network = new NetworkWidget;
+  auto *param_editor = new ParameterEditor;
 
-  auto central = new QWidget;
-  auto lo = new QHBoxLayout(central);
+  auto *central = new QWidget;
+  auto *lo = new QHBoxLayout(central);
   lo->addWidget(network);
   lo->addWidget(param_editor);
   QObject::connect(network, &NetworkWidget::node_selection_changed,
@@ -37,5 +37,5 @@ int main(int argc, char **argv) {
                                   "pipeline/template/StartUp"));
 
   main_window.show();
-  return app.exec();
+  return QApplication::exec();
 }

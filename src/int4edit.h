@@ -7,12 +7,12 @@
 
 class Int4Edit : public QWidget {
 public:
-  Int4Edit(QWidget *parent = nullptr) {
-    auto lo = new QGridLayout;
+  explicit Int4Edit(QWidget * = nullptr) {
+    auto *lo = new QGridLayout;
     lo->setMargin(0);
     setLayout(lo);
-    for (size_t i = 0; i < 4; ++i) {
-      auto sb = new QSpinBox;
+    for (int i = 0; i < 4; ++i) {
+      auto *sb = new QSpinBox;
       sb->setMaximum(1920);
       lo->addWidget(sb, 0, i);
       m_spin_boxes[i] = sb;
@@ -34,8 +34,10 @@ public:
   }
 
   void set_value(const QJsonArray &a) {
-    set_value(a[0].toDouble(), a[1].toDouble(), a[2].toDouble(),
-              a[3].toDouble());
+    m_spin_boxes[0]->setValue(static_cast<int>(a[0].toDouble()));
+    m_spin_boxes[1]->setValue(static_cast<int>(a[1].toDouble()));
+    m_spin_boxes[2]->setValue(static_cast<int>(a[2].toDouble()));
+    m_spin_boxes[3]->setValue(static_cast<int>(a[3].toDouble()));
   }
 
 private:

@@ -9,13 +9,14 @@ TextNode::TextNode(NetworkWidget *parent, QString text)
   setFlag(ItemSendsGeometryChanges);
   setFlag(ItemIsSelectable);
 
-  auto p_in_slot = new NodeSlotIn(this);
+  auto *p_in_slot = new NodeSlotIn(this);
   p_in_slot->setPos(-10, 0);
   m_in_slot = p_in_slot;
 }
 
-void TextNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-                     QWidget *widget) {
+void TextNode::paint(QPainter *painter,
+                     const QStyleOptionGraphicsItem * /*option*/,
+                     QWidget * /*widget*/) {
   painter->drawRoundedRect(-10, -5, 100, 10, 5, 5);
 
   QFont font = painter->font();
@@ -33,7 +34,7 @@ QVariant TextNode::itemChange(GraphicsItemChange change,
                               const QVariant &value) {
   switch (change) {
   case QGraphicsItem::ItemPositionHasChanged:
-    for (auto w : m_in_slot->m_wires)
+    for (auto *w : m_in_slot->m_wires)
       w->adjust();
     break;
   default:

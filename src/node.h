@@ -13,10 +13,10 @@
 
 class Node : public QGraphicsItem {
 public:
-  Node(NetworkWidget *parent, QPixmap pixmap = {});
+  explicit Node(NetworkWidget *parent, const QPixmap &pixmap = {});
 
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-             QWidget *widget = nullptr) override;
+             QWidget *widget) override;
 
   QRectF boundingRect() const override;
 

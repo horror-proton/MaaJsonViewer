@@ -16,25 +16,25 @@ template <class... Ts> struct overloaded : Ts... {
 };
 template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
-Node::Node(NetworkWidget *parent, QPixmap pixmap)
-    : m_parent_network(parent), m_pixmap(std::move(pixmap)) {
+Node::Node(NetworkWidget *parent, const QPixmap &pixmap)
+    : m_parent_network(parent), m_pixmap(pixmap) {
   setFlag(ItemIsMovable);
   setFlag(ItemSendsGeometryChanges);
   setFlag(ItemIsSelectable);
-  auto p_in_slot = new NodeSlotIn(this);
+  auto *p_in_slot = new NodeSlotIn(this);
   p_in_slot->setPos(-10, 0);
   m_in_slot = p_in_slot;
 
   if (!m_pixmap.isNull()) {
     m_pixmap = m_pixmap.scaledToWidth(80);
-    auto pixmap_item = new QGraphicsPixmapItem(m_pixmap, this);
+    auto *pixmap_item = new QGraphicsPixmapItem(m_pixmap, this);
   }
 
   regenerate_reserved_out_slots();
 }
 
-void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-                 QWidget *widget) {
+void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem * /*option*/,
+                 QWidget * /*widget*/) {
   if (isSelected()) {
     painter->setPen(Qt::NoPen);
     painter->setBrush(Qt::blue);
@@ -64,15 +64,15 @@ QRectF Node::boundingRect() const { return QRectF{-15, -20, 120, 130}; }
 QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
   switch (change) {
   case QGraphicsItem::ItemPositionHasChanged:
-    for (auto w : m_in_slot->m_wires)
+    for (auto *w : m_in_slot->m_wires)
       w->adjust();
-    for (auto s : m_out_slots)
-      for (auto w : s->m_wires)
+    for (auto *s : m_out_slots)
+      for (auto *w : s->m_wires)
         w->adjust();
     break;
   case QGraphicsItem::ItemSelectedChange:
-    for (auto os : m_out_slots)
-      for (auto ow : os->m_wires) {
+    for (auto *os : m_out_slots)
+      for (auto *ow : os->m_wires) {
         ow->m_is_from_selected = value.toBool();
         ow->update();
         std::visit(overloaded{
@@ -84,8 +84,8 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
                    },
                    ow->m_dst_slot->m_parent_node);
       }
-    if (m_in_slot) {
-      for (auto iw : m_in_slot->m_wires) {
+    if (m_in_slot != nullptr) {
+      for (auto *iw : m_in_slot->m_wires) {
         iw->m_is_to_selected = value.toBool();
         iw->update();
       }
@@ -97,7 +97,7 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
 }
 
 NodeSlotOut *Node::add_out_slot(int index) {
-  auto slot = new NodeSlotOut(this);
+  auto *slot = new NodeSlotOut(this);
   m_out_slots.insert(index, slot);
   adjust_out_slots();
   return slot;
@@ -105,9 +105,9 @@ NodeSlotOut *Node::add_out_slot(int index) {
 
 void Node::adjust_out_slots() {
   int i = 0;
-  for (auto s : m_out_slots) {
+  for (auto *s : m_out_slots) {
     s->setPos(90, i * node_spacing);
-    for (auto w : s->m_wires)
+    for (auto *w : s->m_wires)
       w->adjust();
     ++i;
   }
@@ -117,7 +117,7 @@ void Node::regenerate_reserved_out_slots() {
   const int desired_size = m_out_slots.size() + 1;
   if (m_reserved_out_slots.size() > desired_size) {
     for (int i = desired_size; i < m_reserved_out_slots.size(); ++i) {
-      auto slot = m_reserved_out_slots.at(i);
+      auto *slot = m_reserved_out_slots.at(i);
       slot->setParentItem(nullptr);
       m_parent_network->scene()->removeItem(slot);
       delete slot;
@@ -125,20 +125,20 @@ void Node::regenerate_reserved_out_slots() {
     }
   } else if (m_reserved_out_slots.size() < desired_size) {
     for (int i = m_reserved_out_slots.size(); i < desired_size; ++i) {
-      auto slot = new NodeSlotOut(this, true);
+      auto *slot = new NodeSlotOut(this, true);
       m_reserved_out_slots.append(slot);
     }
   }
   int i = 0;
-  for (auto s : m_reserved_out_slots) {
+  for (auto *s : m_reserved_out_slots) {
     s->setPos(85, i * node_spacing - 0.5 * node_spacing);
     ++i;
   }
 }
 
 void Node::out_slot_disconnect(NodeSlotOut *slot) {
-  auto w = slot->m_wires.front();
-  auto dst = w->m_dst_slot;
+  auto *w = slot->m_wires.front();
+  auto *dst = w->m_dst_slot;
   m_parent_network->addPendingToDstWire(dst);
   m_parent_network->deleteWire(w);
   m_out_slots.removeOne(slot);
