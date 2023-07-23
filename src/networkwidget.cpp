@@ -53,14 +53,9 @@ void NetworkWidget::import_json(const QJsonObject &root, const QDir &img_dir) {
       continue;
 
     QPixmap pixmap = {};
-    auto iter = QDirIterator(img_dir);
-    while (iter.hasNext()) {
-      auto fn = iter.next();
-      if (iter.fileName() == k + ".png") {
-        pixmap = QPixmap(iter.filePath());
-        break;
-      }
-    }
+    auto t_path = root.value(k).toObject().value("template").toString();
+    if (!t_path.isEmpty())
+      pixmap = QPixmap(img_dir.path() + "/" + t_path); // TODO
 
     auto ix = z_order_curve_helper(i >> 0);
     auto iy = z_order_curve_helper(i >> 1);
@@ -75,7 +70,10 @@ void NetworkWidget::import_json(const QJsonObject &root, const QDir &img_dir) {
   }
 
   for (auto [k, node] : m_node_key_map) {
-    auto nextarr = root[QString::fromStdString(k)]["next"].toArray();
+    auto nextarr = root.value(QString::fromStdString(k))
+                       .toObject()
+                       .value("next")
+                       .toArray();
     for (auto other_key : nextarr) {
       auto iter = m_node_key_map.find(other_key.toString().toStdString());
       if (iter == m_node_key_map.end()) {

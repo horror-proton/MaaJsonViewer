@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
   }
 
   network->import_json(root, QDir("./MAA1999/assets/resource/"
-                                  "pipeline/template/StartUp"));
+                                  "pipeline"));
 
   main_window.show();
   return QApplication::exec();
