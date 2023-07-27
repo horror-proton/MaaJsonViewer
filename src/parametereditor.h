@@ -26,6 +26,18 @@ public slots:
 private:
   QGroupBox *m_node_group;
   QComboBox *m_recognition_combo;
+
   Int4Edit *m_roi_edit;
+
+  // Template Match
+  QLineEdit *m_template_edit;
+  QCheckBox *m_threshold_check;
+  QSlider *m_threshold_slider;
+
+  // OCR
+  QCheckBox *m_chroma_key_check;
+
   QCheckBox *m_cache_check;
+
+  QComboBox *m_action_combo;
 };

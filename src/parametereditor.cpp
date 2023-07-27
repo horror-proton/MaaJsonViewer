@@ -45,20 +45,22 @@ ParameterEditor::ParameterEditor(QWidget *parent) : QWidget(parent) {
     recognition_params[1]->setLayout(lo);
     lo->setAlignment(Qt::AlignTop);
     lo->addWidget(new QLabel("Template:"), 0, 0);
-    auto *template_le = new QLineEdit;
-    template_le->setPlaceholderText("(default)");
-    lo->addWidget(template_le, 0, 1);
-    auto *threshold_check = new QCheckBox("Threshold:");
-    lo->addWidget(threshold_check, 1, 0);
-    auto *threshold_slider = new QSlider(Qt::Horizontal);
-    threshold_slider->setValue(70);
+    m_template_edit = new QLineEdit;
+    m_template_edit->setPlaceholderText("(default)");
+    lo->addWidget(m_template_edit, 0, 1);
+    m_threshold_check = new QCheckBox("Threshold:");
+    lo->addWidget(m_threshold_check, 1, 0);
+    m_threshold_slider = new QSlider(Qt::Horizontal);
+    m_threshold_slider->setValue(70);
 
-    connect(threshold_check, &QCheckBox::stateChanged, threshold_slider,
+    connect(m_threshold_check, &QCheckBox::stateChanged, m_threshold_slider,
             &QSlider::setEnabled);
-    threshold_check->stateChanged(0);
+    m_threshold_check->stateChanged(0);
 
-    lo->addWidget(threshold_slider, 1, 1);
-    lo->addWidget(new QCheckBox("Chroma key"), 2, 0, 1, 2);
+    lo->addWidget(m_threshold_slider, 1, 1);
+
+    m_chroma_key_check = new QCheckBox("Chroma key");
+    lo->addWidget(m_chroma_key_check, 2, 0, 1, 2);
   }
   {
     recognition_params[2] = new QGroupBox;
@@ -97,16 +99,16 @@ ParameterEditor::ParameterEditor(QWidget *parent) : QWidget(parent) {
   ++cr;
 
   auto *action_label = new QLabel("Action:");
-  auto *action_combo = new QComboBox;
-  action_combo->addItem("DoNothing");
-  action_combo->addItem("Click");
-  action_combo->addItem("Swipe");
-  action_combo->addItem("WaitFreezes");
-  action_combo->addItem("StartApp");
-  action_combo->addItem("StopApp");
-  action_combo->addItem("CustomTask");
+  m_action_combo = new QComboBox;
+  m_action_combo->addItem("DoNothing");
+  m_action_combo->addItem("Click");
+  m_action_combo->addItem("Swipe");
+  m_action_combo->addItem("WaitFreezes");
+  m_action_combo->addItem("StartApp");
+  m_action_combo->addItem("StopApp");
+  m_action_combo->addItem("CustomTask");
   param_layout->addWidget(action_label, cr, 0);
-  param_layout->addWidget(action_combo, cr, 1);
+  param_layout->addWidget(m_action_combo, cr, 1);
   ++cr;
 
   { action_prarms[0] = new QWidget; }
@@ -156,11 +158,11 @@ ParameterEditor::ParameterEditor(QWidget *parent) : QWidget(parent) {
   connect(m_recognition_combo, qOverload<int>(&QComboBox::currentIndexChanged),
           this, [=](int index) -> void { show_at(recognition_params, index); });
 
-  connect(action_combo, qOverload<int>(&QComboBox::currentIndexChanged), this,
+  connect(m_action_combo, qOverload<int>(&QComboBox::currentIndexChanged), this,
           [=](int index) -> void { show_at(action_prarms, index); });
 
   m_recognition_combo->currentIndexChanged(0);
-  action_combo->currentIndexChanged(0);
+  m_action_combo->currentIndexChanged(0);
 }
 
 void ParameterEditor::load_from_json(const QJsonObject &json) {
@@ -168,6 +170,15 @@ void ParameterEditor::load_from_json(const QJsonObject &json) {
     auto jt = json.value("recognition").toString();
     if (jt == "TemplateMatch") {
       m_recognition_combo->setCurrentIndex(1);
+
+      m_template_edit->setText(json.value("template").toString());
+
+      auto jth = json.value("threshold");
+      m_threshold_check->setChecked(!jth.isUndefined());
+      m_threshold_slider->setValue(static_cast<int>(jth.toDouble(0.7) * 100));
+
+      m_chroma_key_check->setChecked(json.value("green_mask").toBool());
+
     } else if (jt == "OCR") {
       m_recognition_combo->setCurrentIndex(2);
     } else {
@@ -183,6 +194,13 @@ void ParameterEditor::load_from_json(const QJsonObject &json) {
     auto jcache = json.value("cache").toBool();
     if (jcache)
       m_cache_check->setChecked(true);
+  }
+  {
+    auto jaction = json.value("action").toString();
+    if (jaction.isNull() || jaction == "DoNothing") {
+      m_action_combo->setCurrentIndex(0);
+    } else {
+    }
   }
   // TODO
 }
