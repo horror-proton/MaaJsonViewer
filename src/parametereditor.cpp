@@ -1,5 +1,6 @@
 #include "parametereditor.h"
 #include "int4edit.h"
+#include "paramarray.h"
 #include "qabstractspinbox.h"
 #include "qboxlayout.h"
 #include "qcheckbox.h"
@@ -92,6 +93,10 @@ ParameterEditor::ParameterEditor(QWidget *parent) : QWidget(parent) {
   m_roi_edit = new Int4Edit;
   param_layout->addWidget(roi_label, cr, 0);
   param_layout->addWidget(m_roi_edit, cr, 1);
+  ++cr;
+
+  auto *multi_roi = new ParamArray<QSpinBox>;
+  param_layout->addWidget(multi_roi, cr, 1);
   ++cr;
 
   m_cache_check = new QCheckBox("Cache");
@@ -188,7 +193,7 @@ void ParameterEditor::load_from_json(const QJsonObject &json) {
   }
   {
     auto jroi = json.value("roi").toArray();
-    m_roi_edit->set_value(jroi);
+    m_roi_edit->setValue(jroi);
   }
   {
     auto jcache = json.value("cache").toBool();
