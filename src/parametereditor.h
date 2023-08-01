@@ -2,6 +2,7 @@
 
 #include "int4edit.h"
 #include "node.h"
+#include "paramarray.h"
 #include "qcheckbox.h"
 #include "qgroupbox.h"
 #include "qobjectdefs.h"
@@ -35,6 +36,8 @@ private:
   QSlider *m_threshold_slider;
 
   // OCR
+  ParamArray<QLineEdit> *m_text_edit;
+
   QCheckBox *m_chroma_key_check;
 
   QCheckBox *m_cache_check;

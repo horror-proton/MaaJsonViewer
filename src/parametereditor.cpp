@@ -20,11 +20,19 @@
 #include <QDoubleSpinBox>
 #include <QGroupBox>
 #include <QLineEdit>
+#include <vector>
 
+// set only one widget in container visible
 template <typename C> inline void show_at(C &qobj_container, size_t index) {
   using std::size;
   for (size_t i = 0; i < size(qobj_container); ++i)
     qobj_container[i]->setVisible(i == index);
+}
+
+// initialize a pointer with operator new
+template <typename T, typename... Args>
+inline constexpr T *p_new(T *&p, Args &&...args) {
+  return p = new T(std::forward<Args>(args)...);
 }
 
 ParameterEditor::ParameterEditor(QWidget *parent) : QWidget(parent) {
@@ -49,8 +57,7 @@ ParameterEditor::ParameterEditor(QWidget *parent) : QWidget(parent) {
     m_template_edit = new QLineEdit;
     m_template_edit->setPlaceholderText("(default)");
     lo->addWidget(m_template_edit, 0, 1);
-    m_threshold_check = new QCheckBox("Threshold:");
-    lo->addWidget(m_threshold_check, 1, 0);
+    lo->addWidget(p_new(m_threshold_check, "Threshold:"), 1, 0);
     m_threshold_slider = new QSlider(Qt::Horizontal);
     m_threshold_slider->setValue(70);
 
@@ -60,8 +67,7 @@ ParameterEditor::ParameterEditor(QWidget *parent) : QWidget(parent) {
 
     lo->addWidget(m_threshold_slider, 1, 1);
 
-    m_chroma_key_check = new QCheckBox("Chroma key");
-    lo->addWidget(m_chroma_key_check, 2, 0, 1, 2);
+    lo->addWidget(p_new(m_chroma_key_check, "Chroma key"), 2, 0, 1, 2);
   }
   {
     recognition_params[2] = new QGroupBox;
@@ -69,7 +75,7 @@ ParameterEditor::ParameterEditor(QWidget *parent) : QWidget(parent) {
     recognition_params[2]->setLayout(lo);
     lo->setAlignment(Qt::AlignTop);
     lo->addWidget(new QLabel("Text:"), 0, 0);
-    lo->addWidget(new QLineEdit(), 0, 1);
+    lo->addWidget(p_new(m_text_edit), 0, 1);
     lo->addWidget(new QLabel("Replace:"), 1, 0);
     lo->addWidget(new QLineEdit(), 1, 1);
   }
@@ -90,17 +96,11 @@ ParameterEditor::ParameterEditor(QWidget *parent) : QWidget(parent) {
   ++cr;
 
   auto *roi_label = new QLabel("ROI:");
-  m_roi_edit = new Int4Edit;
   param_layout->addWidget(roi_label, cr, 0);
-  param_layout->addWidget(m_roi_edit, cr, 1);
+  param_layout->addWidget(p_new(m_roi_edit), cr, 1);
   ++cr;
 
-  auto *multi_roi = new ParamArray<QSpinBox>;
-  param_layout->addWidget(multi_roi, cr, 1);
-  ++cr;
-
-  m_cache_check = new QCheckBox("Cache");
-  param_layout->addWidget(m_cache_check, cr, 0, 1, 2);
+  param_layout->addWidget(p_new(m_cache_check, "Cache"), cr, 0, 1, 2);
   ++cr;
 
   auto *action_label = new QLabel("Action:");
@@ -186,6 +186,11 @@ void ParameterEditor::load_from_json(const QJsonObject &json) {
 
     } else if (jt == "OCR") {
       m_recognition_combo->setCurrentIndex(2);
+      auto jtext = json.value("text").toArray();
+      std::vector<QString> temp;
+      for (auto &&text : jtext)
+        temp.push_back(text.toString());
+      m_text_edit->set_values(temp);
     } else {
       m_recognition_combo->setCurrentIndex(0);
     }

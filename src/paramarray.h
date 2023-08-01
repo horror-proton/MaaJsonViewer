@@ -2,37 +2,37 @@
 
 #include "qboxlayout.h"
 #include "qdebug.h"
+#include "qlineedit.h"
 #include "qlist.h"
 #include "qobjectdefs.h"
 #include "qpushbutton.h"
 #include "qwidget.h"
 
+#include <QDebug>
+
 #include <vector>
 
-template <typename W> struct param_traits {
-  static constexpr decltype(auto) get_value(const W &widget) {
-    return (widget.value());
-  }
-
-  using value_type =
-      std::remove_reference_t<decltype(get_value(std::declval<W>()))>;
-
-  static constexpr decltype(auto) set_value(const W &widget,
-                                            const value_type &value) {
-    return (widget.setValue(value));
-  }
-};
+#include "param_traits.hpp"
 
 template <typename Q> struct qobj_deleter {
   void operator()(Q *ptr) const { ptr->deleteLater(); }
 };
 
-template <typename T> class ParamArray : public QWidget {
+class ParamArrayBase : public QWidget {
+  Q_OBJECT
+public:
+  using QWidget::QWidget;
+  void emit_value_changed() { emit value_changed(); }
+signals:
+  void value_changed();
+};
+
+template <typename T> class ParamArray : public ParamArrayBase {
 public:
   using parameter = T;
 
   explicit ParamArray(QWidget *parent = nullptr)
-      : QWidget(parent), m_layout(new QVBoxLayout) {
+      : ParamArrayBase(parent), m_layout(new QVBoxLayout) {
     m_layout->setMargin(0);
     setLayout(m_layout);
 
@@ -44,14 +44,17 @@ public:
     m_layout->addLayout(buttons);
     connect(add_button, &QPushButton::released, this, &ParamArray::add_param);
     connect(sub_button, &QPushButton::released, this, &ParamArray::pop_param);
-
-    add_param();
   }
 
   parameter *add_param() {
     auto *p = new parameter;
     m_p.push_back(p);
     m_layout->insertWidget(m_layout->count() - 1, p);
+    /* TODO
+    connect(p, param_traits<parameter>::value_changed_signal, this,
+            &ParamArray::emit_value_changed);
+    */
+    emit_value_changed();
     return p;
   }
 
@@ -65,26 +68,26 @@ public:
     return result;
   }
 
+  template <typename C> void set_values(const C &values) {
+    using std::size;
+    for (; m_p.size() > size(values);)
+      pop_param();
+    for (; m_p.size() < size(values);)
+      add_param();
+    for (int i = 0; i < m_p.size(); ++i)
+      param_traits<parameter>::set_value(*m_p[i], values[i]);
+    emit_value_changed();
+  }
+
   auto pop_param() {
     if (m_p.empty())
       return std::shared_ptr<parameter>{};
     parameter *p = m_p.back();
     m_p.pop_back();
     m_layout->removeWidget(p);
+    emit_value_changed();
     return std::shared_ptr<parameter>(p, qobj_deleter<parameter>{});
   }
-
-  /* This crashes gcc 13.1.1
-  std::unique_ptr<parameter, decltype([](auto *ptr) { ptr->deleteLater(); })>
-  pop_param() {
-    if (m_p.empty())
-      return {};
-    auto *p = m_p.back();
-    m_p.pop_back();
-    m_layout->removeWidget(p);
-    return p;
-  }
-  */
 
 private:
   QVBoxLayout *m_layout;
