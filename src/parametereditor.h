@@ -1,7 +1,7 @@
 #pragma once
 
 #include "int4edit.h"
-#include "node.h"
+#include "network/node.h"
 #include "paramarray.h"
 #include "qcheckbox.h"
 #include "qgroupbox.h"

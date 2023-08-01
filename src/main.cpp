@@ -1,4 +1,4 @@
-#include "networkwidget.h"
+#include "network/networkwidget.h"
 #include "parametereditor.h"
 #include "qdebug.h"
 #include "qmainwindow.h"
