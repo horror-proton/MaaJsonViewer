@@ -7,6 +7,7 @@
 #include "qgridlayout.h"
 #include "qgroupbox.h"
 #include "qjsonarray.h"
+#include "qjsonhelper.h"
 #include "qjsonobject.h"
 #include "qlabel.h"
 #include "qlayout.h"
@@ -186,11 +187,8 @@ void ParameterEditor::load_from_json(const QJsonObject &json) {
 
     } else if (jt == "OCR") {
       m_recognition_combo->setCurrentIndex(2);
-      auto jtext = json.value("text").toArray();
-      std::vector<QString> temp;
-      for (auto &&text : jtext)
-        temp.push_back(text.toString());
-      m_text_edit->set_values(temp);
+      m_text_edit->set_values(from_string_or_string_list(json.value("text"))
+                                  .value_or(std::vector<QString>{}));
     } else {
       m_recognition_combo->setCurrentIndex(0);
     }
