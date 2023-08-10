@@ -38,16 +38,25 @@ NetworkWidget::NetworkWidget(QWidget *parent) : QGraphicsView(parent) {
 }
 
 uint32_t z_order_curve_helper(uint32_t x) {
-  x &= 0x55555555;
-  x = (x ^ (x >> 1)) & 0x33333333;
-  x = (x ^ (x >> 2)) & 0x0f0f0f0f;
-  x = (x ^ (x >> 4)) & 0x00ff00ff;
-  x = (x ^ (x >> 8)) & 0x0000ffff;
+  x &= 0x55555555U;
+  x = (x ^ (x >> 1U)) & 0x33333333U;
+  x = (x ^ (x >> 2U)) & 0x0f0f0f0fU;
+  x = (x ^ (x >> 4U)) & 0x00ff00ffU;
+  x = (x ^ (x >> 8U)) & 0x0000ffffU;
   return x;
 }
 
+void NetworkWidget::import_directory(QDir dir) {
+  dir.setNameFilters({"*.json"});
+  auto dir_iter = QDirIterator(dir);
+  while (dir_iter.hasNext()) {
+    auto file = dir_iter.next();
+    // TODO
+  }
+}
+
 void NetworkWidget::import_json(const QJsonObject &root, const QDir &img_dir) {
-  int i = 0;
+  uint32_t i = 0;
   for (const auto &k : root.keys()) {
     if (k == "Stop") // Do not add Stop node
       continue;
@@ -57,8 +66,8 @@ void NetworkWidget::import_json(const QJsonObject &root, const QDir &img_dir) {
     if (!t_path.isEmpty())
       pixmap = QPixmap(img_dir.path() + "/" + t_path); // TODO
 
-    auto ix = z_order_curve_helper(i >> 0);
-    auto iy = z_order_curve_helper(i >> 1);
+    auto ix = z_order_curve_helper(i >> 0U);
+    auto iy = z_order_curve_helper(i >> 1U);
 
     auto *node = new Node(this, pixmap);
     node->setPos(ix * 150, iy * 150 + 10 * ix);

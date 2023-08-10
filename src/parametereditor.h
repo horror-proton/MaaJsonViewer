@@ -7,6 +7,7 @@
 #include "qgroupbox.h"
 #include "qobjectdefs.h"
 #include "qwidget.h"
+#include "targetedit.h"
 #include <QComboBox>
 
 class ParameterEditor : public QWidget {
@@ -28,7 +29,7 @@ private:
   QGroupBox *m_node_group;
   QComboBox *m_recognition_combo;
 
-  Int4Edit *m_roi_edit;
+  ParamArray<Int4Edit> *m_roi_edit;
 
   // Template Match
   QLineEdit *m_template_edit;
@@ -43,4 +44,8 @@ private:
   QCheckBox *m_cache_check;
 
   QComboBox *m_action_combo;
+
+  // Click
+  TargetEdit *m_target_edit;
+  Int4Edit *m_target_offest_edit;
 };

@@ -7,7 +7,7 @@
 #include "qgridlayout.h"
 #include "qgroupbox.h"
 #include "qjsonarray.h"
-#include "qjsonhelper.h"
+#include "qjsonhelper.hpp"
 #include "qjsonobject.h"
 #include "qlabel.h"
 #include "qlayout.h"
@@ -15,12 +15,14 @@
 #include "qspinbox.h"
 #include "qstackedwidget.h"
 #include "qwidget.h"
+#include "targetedit.h"
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDebug>
 #include <QDoubleSpinBox>
 #include <QGroupBox>
 #include <QLineEdit>
+#include <utility>
 #include <vector>
 
 // set only one widget in container visible
@@ -34,6 +36,24 @@ template <typename C> inline void show_at(C &qobj_container, size_t index) {
 template <typename T, typename... Args>
 inline constexpr T *p_new(T *&p, Args &&...args) {
   return p = new T(std::forward<Args>(args)...);
+}
+
+template <typename P>
+inline auto add_labeled_param(QGridLayout *lo, const QString &text, P *widget,
+                              int row = 0) {
+  lo->addWidget(new QLabel(text), row, 0);
+  lo->addWidget(widget, row, 1);
+  return widget;
+}
+
+template <typename P>
+inline auto add_checked_param(QGridLayout *lo, const QString &text, P *widget,
+                              int row = 0) {
+  auto *cb = new QCheckBox(text);
+  lo->addWidget(cb, row, 0);
+  lo->addWidget(widget, row, 1);
+  connect(cb, &QCheckBox::stateChanged, widget, &P::setEnabled);
+  return std::make_pair(cb, widget);
 }
 
 ParameterEditor::ParameterEditor(QWidget *parent) : QWidget(parent) {
@@ -96,8 +116,7 @@ ParameterEditor::ParameterEditor(QWidget *parent) : QWidget(parent) {
     param_layout->addWidget(p, cr, 0, 1, 2);
   ++cr;
 
-  auto *roi_label = new QLabel("ROI:");
-  param_layout->addWidget(roi_label, cr, 0);
+  param_layout->addWidget(new QLabel("ROI:"), cr, 0);
   param_layout->addWidget(p_new(m_roi_edit), cr, 1);
   ++cr;
 
@@ -122,22 +141,9 @@ ParameterEditor::ParameterEditor(QWidget *parent) : QWidget(parent) {
     action_prarms[1] = new QGroupBox;
     auto *lo = new QGridLayout;
     action_prarms[1]->setLayout(lo);
-    lo->addWidget(new QLabel("Target:"), 0, 0);
-    auto *target_combo = new QComboBox;
-    target_combo->addItem("Default");
-    target_combo->addItem("Node");
-    target_combo->addItem("Rect");
-    lo->addWidget(target_combo, 0, 1);
-
-    QWidget *target_params[3];
-    target_params[0] = new QWidget;
-    target_params[1] = new QLineEdit;
-    target_params[2] = new Int4Edit;
-    for (auto *p : target_params)
-      lo->addWidget(p, 1, 0, 1, 2);
-    connect(target_combo, qOverload<int>(&QComboBox::currentIndexChanged), this,
-            [=](int index) -> void { show_at(target_params, index); });
-    target_combo->currentIndexChanged(0);
+    lo->addWidget(p_new(m_target_edit, "Target:"), 0, 0, 1, 2);
+    lo->addWidget(new QLabel("Target Offset:"), 2, 0);
+    lo->addWidget(p_new(m_target_offest_edit), 2, 1);
   }
   {
     action_prarms[2] = new QGroupBox;
@@ -195,8 +201,8 @@ void ParameterEditor::load_from_json(const QJsonObject &json) {
     // TODO: remove other keys
   }
   {
-    auto jroi = json.value("roi").toArray();
-    m_roi_edit->setValue(jroi);
+    m_roi_edit->set_values(from_int4_or_int4_list(json.value("roi"))
+                               .value_or(std::vector<std::array<int, 4>>{}));
   }
   {
     auto jcache = json.value("cache").toBool();
@@ -207,7 +213,8 @@ void ParameterEditor::load_from_json(const QJsonObject &json) {
     auto jaction = json.value("action").toString();
     if (jaction.isNull() || jaction == "DoNothing") {
       m_action_combo->setCurrentIndex(0);
-    } else {
+    } else if (jaction == "Click") {
+      m_action_combo->setCurrentIndex(1);
     }
   }
   // TODO

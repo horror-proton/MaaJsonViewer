@@ -20,6 +20,8 @@ public:
 
   void import_json(const QJsonObject &root, const QDir &img_dir);
 
+  void import_directory(QDir dir);
+
   std::unordered_map<std::string, Node *> m_node_key_map;
 
 protected:
