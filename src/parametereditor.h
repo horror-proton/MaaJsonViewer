@@ -48,4 +48,10 @@ private:
   // Click
   TargetEdit *m_target_edit;
   Int4Edit *m_target_offest_edit;
+
+  // Swipe
+  TargetEdit *m_begin_edit;
+  Int4Edit *m_begin_offest_edit;
+  TargetEdit *m_end_edit;
+  Int4Edit *m_end_offest_edit;
 };

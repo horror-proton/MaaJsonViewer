@@ -52,7 +52,7 @@ inline auto add_checked_param(QGridLayout *lo, const QString &text, P *widget,
   auto *cb = new QCheckBox(text);
   lo->addWidget(cb, row, 0);
   lo->addWidget(widget, row, 1);
-  connect(cb, &QCheckBox::stateChanged, widget, &P::setEnabled);
+  QCheckBox::connect(cb, &QCheckBox::stateChanged, widget, &P::setEnabled);
   return std::make_pair(cb, widget);
 }
 
@@ -74,19 +74,16 @@ ParameterEditor::ParameterEditor(QWidget *parent) : QWidget(parent) {
     auto *lo = new QGridLayout;
     recognition_params[1]->setLayout(lo);
     lo->setAlignment(Qt::AlignTop);
-    lo->addWidget(new QLabel("Template:"), 0, 0);
+
     m_template_edit = new QLineEdit;
     m_template_edit->setPlaceholderText("(default)");
-    lo->addWidget(m_template_edit, 0, 1);
-    lo->addWidget(p_new(m_threshold_check, "Threshold:"), 1, 0);
+    add_labeled_param(lo, "Template:", m_template_edit, 0);
+
     m_threshold_slider = new QSlider(Qt::Horizontal);
     m_threshold_slider->setValue(70);
-
-    connect(m_threshold_check, &QCheckBox::stateChanged, m_threshold_slider,
-            &QSlider::setEnabled);
+    m_threshold_check =
+        add_checked_param(lo, "Threshoold:", m_threshold_slider, 1).first;
     m_threshold_check->stateChanged(0);
-
-    lo->addWidget(m_threshold_slider, 1, 1);
 
     lo->addWidget(p_new(m_chroma_key_check, "Chroma key"), 2, 0, 1, 2);
   }
@@ -95,10 +92,8 @@ ParameterEditor::ParameterEditor(QWidget *parent) : QWidget(parent) {
     auto *lo = new QGridLayout;
     recognition_params[2]->setLayout(lo);
     lo->setAlignment(Qt::AlignTop);
-    lo->addWidget(new QLabel("Text:"), 0, 0);
-    lo->addWidget(p_new(m_text_edit), 0, 1);
-    lo->addWidget(new QLabel("Replace:"), 1, 0);
-    lo->addWidget(new QLineEdit(), 1, 1);
+    add_labeled_param(lo, "Text:", p_new(m_text_edit), 0);
+    add_labeled_param(lo, "Replace", new QLineEdit, 1);
   }
 
   // auto algorithm_groups = new QStackedWidget;
@@ -116,8 +111,7 @@ ParameterEditor::ParameterEditor(QWidget *parent) : QWidget(parent) {
     param_layout->addWidget(p, cr, 0, 1, 2);
   ++cr;
 
-  param_layout->addWidget(new QLabel("ROI:"), cr, 0);
-  param_layout->addWidget(p_new(m_roi_edit), cr, 1);
+  add_labeled_param(param_layout, "ROI:", p_new(m_roi_edit), cr);
   ++cr;
 
   param_layout->addWidget(p_new(m_cache_check, "Cache"), cr, 0, 1, 2);
@@ -149,13 +143,16 @@ ParameterEditor::ParameterEditor(QWidget *parent) : QWidget(parent) {
     action_prarms[2] = new QGroupBox;
     auto *lo = new QGridLayout;
     action_prarms[2]->setLayout(lo);
-    auto *duration_checkbox = new QCheckBox("Duration:");
-    lo->addWidget(duration_checkbox, 0, 0);
-    auto *duration_sb = new QSpinBox;
-    connect(duration_checkbox, &QCheckBox::stateChanged, duration_sb,
-            &QSpinBox::setEnabled);
+
+    lo->addWidget(p_new(m_begin_edit, "Begin:"), 0, 0, 1, 2);
+    add_checked_param(lo, "Begin Offset:", p_new(m_begin_offest_edit), 1);
+
+    lo->addWidget(p_new(m_end_edit, "End:"), 2, 0, 1, 2);
+    add_checked_param(lo, "End Offset:", p_new(m_end_offest_edit), 3);
+
+    auto *duration_checkbox =
+        add_checked_param(lo, "Duration:", new QSpinBox, 4).first;
     duration_checkbox->stateChanged(0);
-    lo->addWidget(duration_sb, 0, 1);
   }
   for (auto *p : action_prarms)
     param_layout->addWidget(p, cr, 0, 1, 2);
